@@ -1,3 +1,4 @@
+import 'package:file_manager/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
@@ -116,7 +117,7 @@ class _FileManagerScreenState extends State<FileManagerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("File Manager", style: TextStyle(color: Colors.white)), backgroundColor: Colors.red),
+      appBar: AppBar(title: const Text("File Manager", style: TextStyle(color: AppColors.white)), backgroundColor: AppColors.appColor),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -136,7 +137,7 @@ class _FileManagerScreenState extends State<FileManagerScreen> {
             ),
           ),
           isLoading
-            ? const LinearProgressIndicator(color: Colors.red)
+            ? const LinearProgressIndicator(color: AppColors.appColor)
             : const Divider(),
           Expanded(
             child: files.isEmpty

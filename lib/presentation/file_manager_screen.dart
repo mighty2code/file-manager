@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:file_manager/constants/app_colors.dart';
+import 'package:file_manager/presentation/clip_board_menu.dart';
 import 'package:file_manager/widgets/file_manager_list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,8 +23,8 @@ class FileManagerScreen extends StatelessWidget {
         child: Scaffold(
             appBar: AppBar(
               title: const Text("File Manager",
-                  style: TextStyle(color: Colors.white)),
-              backgroundColor: Colors.red,
+                  style: TextStyle(color: AppColors.white)),
+              backgroundColor: AppColors.appColor,
             ),
             body: BlocBuilder<FileManagerBloc, FileManagerState>(
                 builder: (context, state) {
@@ -62,7 +64,7 @@ class FileManagerScreen extends StatelessWidget {
                     ),
                   ),
                   state is FileManagerLoading
-                      ? const LinearProgressIndicator(color: Colors.red)
+                      ? const LinearProgressIndicator(color: AppColors.appColor)
                       : const Divider(),
                   Expanded(
                       child: Stack(
@@ -124,76 +126,6 @@ class FileManagerScreen extends StatelessWidget {
                 ],
               );
             })),
-      ),
-    );
-  }
-}
-
-class ClipBoardMenu extends StatelessWidget {
-  const ClipBoardMenu({
-    super.key,
-    required this.bloc,
-  });
-
-  final FileManagerBloc bloc;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: const BoxDecoration(
-      color: Colors.white,
-      border: Border(top: BorderSide())
-      ),
-      height: 70,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          if(bloc.clipBoardEntities.isNotEmpty)
-            InkWell(
-              onTap: () => bloc.add(PasteEvent()),
-              child: const Icon(Icons.paste)
-            )
-          else Expanded(
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      InkWell(
-                        onTap: () => bloc.add(SelectAllEntityEvent()),
-                        child: const Icon(Icons.select_all)
-                      ),
-                      const SizedBox(width: 20),
-                      InkWell(
-                        onTap: () => bloc.add(UnselectAllEntityEvent()),
-                        child: const Icon(Icons.deselect)
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      InkWell(
-                        onTap: () => bloc.add(CopyEvent()),
-                        child: const Icon(Icons.copy)
-                      ),
-                      const SizedBox(width: 20),
-                      InkWell(
-                        onTap: () => bloc.add(MoveEvent()),
-                        child: const Icon(Icons.cut)
-                      ),
-                      const SizedBox(width: 20),
-                      InkWell(
-                        onTap: () => bloc.add(DeleteEvent()),
-                        child: const Icon(Icons.delete)
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-          ),
-          
-        ]
       ),
     );
   }

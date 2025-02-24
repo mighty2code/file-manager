@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:file_manager/bussiness_logic/bloc/file_manager_bloc.dart';
+import 'package:file_manager/constants/app_colors.dart';
 import 'package:file_manager/constants/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -74,17 +75,17 @@ class _FileManagerListTileState extends State<FileManagerListTile> {
       child: Card(
         margin: const EdgeInsets.only(bottom: 3),
         color: isSelected
-            ? const Color.fromARGB(255, 255, 203, 212)
-            : Colors.white,
+            ?  AppColors.appColor.shade100
+            : AppColors.white,
         elevation: 0,
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
         child: ListTile(
-          selectedColor: Colors.red.shade50,
+          selectedColor: AppColors.appColor.shade50,
           leading: Icon(widget.entity is Directory
               ? Icons.folder
               : Icons.insert_drive_file),
           title: Text(widget.entity.path.split('/').last),
-          subtitle: stats != null ? Text(DateFormat('yyyy/MM/dd hh:mm a').format(stats!.modified), style: TextStyle(fontSize: 11, color: Colors.grey),) : null,
+          subtitle: stats != null ? Text(DateFormat('yyyy/MM/dd hh:mm a').format(stats!.modified), style: const TextStyle(fontSize: 11, color: AppColors.grey)) : null,
         ),
       ),
     );
