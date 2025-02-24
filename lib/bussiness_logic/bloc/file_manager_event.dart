@@ -21,4 +21,20 @@ final class SelectEntityEvent extends FileManagerEvent {
   SelectEntityEvent({required this.entity, required this.type});
 }
 
+final class UnselectEntityEvent extends FileManagerEvent {
+  final FileSystemEntity entity;
+  final EntityType type;
+  UnselectEntityEvent({required this.entity, required this.type});
+}
+
+final class SelectAllEntityEvent extends FileManagerEvent {}
+
+final class CopyEvent extends FileManagerEvent {}
+final class MoveEvent extends FileManagerEvent {}
+final class DeleteEvent extends FileManagerEvent {}
+
+final class PasteEvent extends FileManagerEvent {}
+
+final class RefreshEvent extends FileManagerEvent {}
+
 final class GoBackEvent extends FileManagerEvent {}
