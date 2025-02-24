@@ -114,63 +114,86 @@ class FileManagerScreen extends StatelessWidget {
                                           ],
                                         ),
 
-                                        if(bloc.selectedEntities.isNotEmpty || bloc.clipBoardEntities.isNotEmpty)
+                                  if(bloc.selectedEntities.isNotEmpty || bloc.clipBoardEntities.isNotEmpty)
                                     Align(
                                       alignment: Alignment.bottomCenter,
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                                        decoration: const BoxDecoration(
-                                        color: Colors.white,
-                                        border: Border(top: BorderSide())
-                                        ),
-                                        height: 70,
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.end,
-                                          children: [
-                                            if(bloc.clipBoardEntities.isNotEmpty)
-                                              InkWell(
-                                                onTap: () => bloc.add(PasteEvent()),
-                                                child: const Icon(Icons.paste)
-                                              )
-                                            else Expanded(
-                                              child: Row(
-                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                  children: [
-                                                    InkWell(
-                                                      onTap: () => bloc.add(SelectAllEntityEvent()),
-                                                      child: const Icon(Icons.select_all)
-                                                    ),
-                                                    Row(
-                                                      children: [
-                                                        InkWell(
-                                                          onTap: () => bloc.add(CopyEvent()),
-                                                          child: const Icon(Icons.copy)
-                                                        ),
-                                                        const SizedBox(width: 20),
-                                                        InkWell(
-                                                          onTap: () => bloc.add(MoveEvent()),
-                                                          child: const Icon(Icons.cut)
-                                                        ),
-                                                        const SizedBox(width: 20),
-                                                        InkWell(
-                                                          onTap: () => bloc.add(DeleteEvent()),
-                                                          child: const Icon(Icons.delete)
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                            ),
-                                            
-                                          ]
-                                        ),
-                                      )
+                                      child: ClipBoardMenu(bloc: bloc)
                                     )
                         ],
                       )),
                 ],
               );
             })),
+      ),
+    );
+  }
+}
+
+class ClipBoardMenu extends StatelessWidget {
+  const ClipBoardMenu({
+    super.key,
+    required this.bloc,
+  });
+
+  final FileManagerBloc bloc;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: const BoxDecoration(
+      color: Colors.white,
+      border: Border(top: BorderSide())
+      ),
+      height: 70,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          if(bloc.clipBoardEntities.isNotEmpty)
+            InkWell(
+              onTap: () => bloc.add(PasteEvent()),
+              child: const Icon(Icons.paste)
+            )
+          else Expanded(
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      InkWell(
+                        onTap: () => bloc.add(SelectAllEntityEvent()),
+                        child: const Icon(Icons.select_all)
+                      ),
+                      const SizedBox(width: 20),
+                      InkWell(
+                        onTap: () => bloc.add(UnselectAllEntityEvent()),
+                        child: const Icon(Icons.deselect)
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      InkWell(
+                        onTap: () => bloc.add(CopyEvent()),
+                        child: const Icon(Icons.copy)
+                      ),
+                      const SizedBox(width: 20),
+                      InkWell(
+                        onTap: () => bloc.add(MoveEvent()),
+                        child: const Icon(Icons.cut)
+                      ),
+                      const SizedBox(width: 20),
+                      InkWell(
+                        onTap: () => bloc.add(DeleteEvent()),
+                        child: const Icon(Icons.delete)
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+          ),
+          
+        ]
       ),
     );
   }

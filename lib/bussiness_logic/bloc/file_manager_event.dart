@@ -28,6 +28,7 @@ final class UnselectEntityEvent extends FileManagerEvent {
 }
 
 final class SelectAllEntityEvent extends FileManagerEvent {}
+final class UnselectAllEntityEvent extends FileManagerEvent {}
 
 final class CopyEvent extends FileManagerEvent {}
 final class MoveEvent extends FileManagerEvent {}

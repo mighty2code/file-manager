@@ -18,6 +18,7 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
     on<OpenFileEvent>(_openFileWithIntent);
     on<SelectEntityEvent>(_onSelectEntity);
     on<SelectAllEntityEvent>(_onSelectAllEntities);
+    on<UnselectAllEntityEvent>(_onUnselectAllEntities);
     on<UnselectEntityEvent>(_onUnselectEntity);
 
     on<CopyEvent>(_copyEvent);
@@ -118,6 +119,12 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
   void _onSelectAllEntities(SelectAllEntityEvent event, Emitter<FileManagerState> emit) {
     selectedEntities.addAll(entities);
     debugPrint('selectedEntities: $selectedEntities [FileManagerBloc._onSelectAllEntities]');
+    add(RefreshEvent());
+  }
+
+  void _onUnselectAllEntities(UnselectAllEntityEvent event, Emitter<FileManagerState> emit) {
+    selectedEntities = {};
+    debugPrint('selectedEntities: $selectedEntities [FileManagerBloc._onUnselectAllEntities]');
     add(RefreshEvent());
   }
 
