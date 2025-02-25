@@ -2,7 +2,9 @@ import 'dart:io';
 import 'package:file_manager/constants/app_colors.dart';
 import 'package:file_manager/presentation/clip_board_menu.dart';
 import 'package:file_manager/widgets/file_manager_list_tile.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:file_manager/bussiness_logic/bloc/file_manager_bloc.dart';
 
@@ -25,7 +27,46 @@ class FileManagerScreen extends StatelessWidget {
               title: const Text("File Manager",
                   style: TextStyle(color: AppColors.white)),
               backgroundColor: AppColors.appColor,
+              iconTheme: const IconThemeData(color: AppColors.white),
             ),
+            backgroundColor: AppColors.white,
+
+            drawer: Drawer(
+              child: Column(
+                children: [
+                  Container(
+                    height: 167,
+                    color: AppColors.appColor.shade700,
+                    padding: const EdgeInsets.only(bottom: 10, left: 15, right: 15),
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('File Manager', style: TextStyle(fontSize: 24, color: AppColors.white, fontWeight: FontWeight.w600)),
+                            Icon(Icons.settings, color: AppColors.white)
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const Padding(
+                    padding: EdgeInsets.only(top: 20, left: 15),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                      Text('Bookmarks', style: TextStyle(fontSize: 15, color: AppColors.appColor, fontWeight: FontWeight.w600)),
+                      SizedBox(height: 10),
+                      ListTile(title: Text('Downloads')),
+                      ListTile(title: Text('Documents')),
+                      ListTile(title: Text('Pictures')),
+                    ]),
+                  ),
+                ]),
+            ),
+
             body: BlocBuilder<FileManagerBloc, FileManagerState>(
                 builder: (context, state) {
               if (state is FileManagerError) {
@@ -71,31 +112,44 @@ class FileManagerScreen extends StatelessWidget {
                         alignment: Alignment.center,
                         children: [
                           state is FileManagerLoading
-                              ? const CircularProgressIndicator()
+                              ? const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  CircularProgressIndicator(color: AppColors.appColor),
+                                ],
+                              )
                               : state is FileManagerShowList || state is FileManagerPasteState
-                                  ? ListView.builder(
-                                      padding: const EdgeInsets.only(bottom: 70),
-                                      itemCount: bloc.entities.length,
-                                      itemBuilder: (context, index) {
-                                        FileSystemEntity entity =
-                                            bloc.entities[index];
-                                        return FileManagerListTile(
-                                          entity: entity,
-                                          bloc: bloc,
-                                          onSelect: (entityType) {
-                                            bloc.add(SelectEntityEvent(
-                                                entity: entity, type: entityType));
-                                          },
-                                          onUnselect: (entityType) {
-                                            bloc.add(UnselectEntityEvent(
-                                                entity: entity, type: entityType));
-                                          },
-                                          isSelectable: bloc.clipBoardEntities.isEmpty,
-                                          isSelected: bloc.selectedEntities
-                                              .contains(entity) || bloc.clipBoardEntities.contains(entity),
-                                        );
-                                      },
-                                    )
+                                  ? RefreshIndicator(
+                                    color: AppColors.appColor,
+                                    onRefresh: () => Future.delayed(
+                                      const Duration(seconds: 1), () {
+                                        bloc.add(RefreshEvent());
+                                      }
+                                    ),
+                                    child: ListView.builder(
+                                        padding: const EdgeInsets.only(bottom: 70),
+                                        itemCount: bloc.entities.length,
+                                        itemBuilder: (context, index) {
+                                          FileSystemEntity entity =
+                                              bloc.entities[index];
+                                          return FileManagerListTile(
+                                            entity: entity,
+                                            bloc: bloc,
+                                            onSelect: (entityType) {
+                                              bloc.add(SelectEntityEvent(
+                                                  entity: entity, type: entityType));
+                                            },
+                                            onUnselect: (entityType) {
+                                              bloc.add(UnselectEntityEvent(
+                                                  entity: entity, type: entityType));
+                                            },
+                                            isSelectable: bloc.clipBoardEntities.isEmpty,
+                                            isSelected: bloc.selectedEntities
+                                                .contains(entity) || bloc.clipBoardEntities.contains(entity),
+                                          );
+                                        },
+                                      ),
+                                  )
                                   : state is FileManagerEmpty
                                       ? const Row(
                                           mainAxisAlignment:

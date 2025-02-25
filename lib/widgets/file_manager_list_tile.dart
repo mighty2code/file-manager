@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:file_manager/bussiness_logic/bloc/file_manager_bloc.dart';
 import 'package:file_manager/constants/app_colors.dart';
 import 'package:file_manager/constants/constants.dart';
+import 'package:file_manager/utils/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -39,9 +40,8 @@ class _FileManagerListTileState extends State<FileManagerListTile> {
 
   initObjects() async {
     stats = await widget.entity.stat();
-    setState(() {
-      
-    });
+    // debugPrint(stats.toString());
+    setState(() {});
   }
 
   @override
@@ -85,7 +85,7 @@ class _FileManagerListTileState extends State<FileManagerListTile> {
               ? Icons.folder
               : Icons.insert_drive_file),
           title: Text(widget.entity.path.split('/').last),
-          subtitle: stats != null ? Text(DateFormat('yyyy/MM/dd hh:mm a').format(stats!.modified), style: const TextStyle(fontSize: 11, color: AppColors.grey)) : null,
+          subtitle: stats != null ? Text('${DateFormat('yyyy/MM/dd hh:mm a').format(stats!.modified)}' /*, ${stats!.size.getSize()}' */, style: const TextStyle(fontSize: 11, color: AppColors.grey)) : null,
         ),
       ),
     );

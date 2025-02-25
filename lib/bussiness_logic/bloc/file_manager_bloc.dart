@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:path/path.dart' as p;
 
 part 'file_manager_event.dart';
 part 'file_manager_state.dart';
@@ -25,6 +26,9 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
     on<MoveEvent>(_moveEvent);
     on<DeleteEvent>(_deleteEvent);
     on<PasteEvent>(_pasteEvent);
+
+    on<ArchiveEvent>(_onArchiveEvent);
+    on<ExtractFileEvent>(_onExtractZipEvent);
 
     on<RefreshEvent>(_refreshEvent);
     on<GoBackEvent>(_goBack);
@@ -50,14 +54,36 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
   }
 
   Future<void> _loadFiles() async {
-    List<Directory>? externalDirs = await getExternalStorageDirectories();
+    List<Directory>? externalDirs;
+    if(Platform.isAndroid) {
+      externalDirs = await getExternalStorageDirectories();
+    } else {
+      externalDirs = [await getLibraryDirectory()];
+    }
 
     if (externalDirs != null && externalDirs.isNotEmpty) {
-      // Get root storage path
-      String rootPath = externalDirs.first.path.split("Android").first;
-      currentDirectory = Directory(rootPath);
+      if(Platform.isAndroid) {
+        // Get root storage path
+        String rootPath = externalDirs.first.path.split("Android").first;
+        currentDirectory = Directory(rootPath);
+      } else {
+        currentDirectory = externalDirs.first;
+      }
       add(OpenDirectoryEvent(currentDirectory));
     }
+  }
+
+  Future<List<Directory>> listEssentialDirectories() async {
+    List<Directory> directories = [];
+    // Get application documents directory (for user files)
+    directories.add(await getApplicationDocumentsDirectory());
+    // Get application support directory (for app-specific files)
+    directories.add(await getApplicationSupportDirectory());
+    // Get temporary directory (for temporary files)
+    directories.add(await getTemporaryDirectory());
+    // Get library directory (for app-specific storage, not user-accessible)
+    directories.add(await getLibraryDirectory());
+    return directories;
   }
 
   void _openDirectory(
@@ -113,25 +139,25 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
   void _onSelectEntity(SelectEntityEvent event, Emitter<FileManagerState> emit) {
     selectedEntities.add(event.entity);
     debugPrint('selectedEntities: $selectedEntities [FileManagerBloc._onSelectEntity]');
-    add(RefreshEvent());
+    emit(FileManagerShowList());
   }
 
   void _onSelectAllEntities(SelectAllEntityEvent event, Emitter<FileManagerState> emit) {
     selectedEntities.addAll(entities);
     debugPrint('selectedEntities: $selectedEntities [FileManagerBloc._onSelectAllEntities]');
-    add(RefreshEvent());
+    emit(FileManagerShowList());
   }
 
   void _onUnselectAllEntities(UnselectAllEntityEvent event, Emitter<FileManagerState> emit) {
     selectedEntities = {};
     debugPrint('selectedEntities: $selectedEntities [FileManagerBloc._onUnselectAllEntities]');
-    add(RefreshEvent());
+    emit(FileManagerShowList());
   }
 
   void _onUnselectEntity(UnselectEntityEvent event, Emitter<FileManagerState> emit) {
     selectedEntities.remove(event.entity);
     debugPrint('selectedEntities: $selectedEntities [FileManagerBloc._onUnselectEntity]');
-    add(RefreshEvent());
+    emit(FileManagerShowList());
   }
 
   void _copyEvent(CopyEvent event, Emitter<FileManagerState> emit) {
@@ -176,14 +202,36 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
     add(OpenDirectoryEvent(currentDirectory));
   }
 
+  void _onArchiveEvent(ArchiveEvent event, Emitter<FileManagerState> emit) async {
+    if(currentDirectory == null) return;
+    await FileUtils.zipFiles(selectedEntities.toList(), File(p.join(currentDirectory!.path, 'archive.zip')));
+    selectedEntities = {};
+    add(OpenDirectoryEvent(currentDirectory));
+  }
+
+  void _onExtractZipEvent(ExtractFileEvent event, Emitter<FileManagerState> emit) async {
+    if(currentDirectory == null || !isSelectionHaveOnlyAZipFile()) return;
+    await FileUtils.unZipFile(selectedEntities.first as File, currentDirectory!.path);
+    selectedEntities = {};
+    add(OpenDirectoryEvent(currentDirectory));
+  }
+
+  bool isSelectionHaveOnlyAZipFile() {
+    if(selectedEntities.isEmpty || selectedEntities.length != 1) return false;
+    FileSystemEntity entity = selectedEntities.first;
+    if(entity is File && FileUtils.isZipFile(entity)) return true;
+    return false;
+  }
+
   void _refreshEvent(RefreshEvent event, Emitter<FileManagerState> emit) {
-    emit(FileManagerShowList());
+    add(OpenDirectoryEvent(currentDirectory));
+    debugPrint('DebugX: on refresh called..');
   }
 
   void _goBack(GoBackEvent event, Emitter<FileManagerState> emit) {
     if (selectedEntities.isNotEmpty) {
       selectedEntities = {};
-      add(RefreshEvent());
+      emit(FileManagerShowList());
       return;
     }
     if (currentDirectory != null) {

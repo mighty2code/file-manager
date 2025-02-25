@@ -47,6 +47,11 @@ class ClipBoardMenu extends StatelessWidget {
                   Row(
                     children: [
                       InkWell(
+                        onTap: () => bloc.add(ShareEvent()),
+                        child: const Icon(Icons.share)
+                      ),
+                      const SizedBox(width: 20),
+                      InkWell(
                         onTap: () => bloc.add(CopyEvent()),
                         child: const Icon(Icons.copy)
                       ),
@@ -60,7 +65,48 @@ class ClipBoardMenu extends StatelessWidget {
                         onTap: () => bloc.add(DeleteEvent()),
                         child: const Icon(Icons.delete)
                       ),
-                    ],
+                      const SizedBox(width: 10),
+
+                      PopupMenuButton<String>(
+                        surfaceTintColor: AppColors.white,
+                        offset: const Offset(10, 10),
+                        itemBuilder: (BuildContext context) {
+                          return [
+                            PopupMenuItem<String>(
+                              onTap: () => bloc.add(ArchiveEvent()),
+                              child: const Row(
+                                children: [
+                                  Icon(Icons.archive),
+                                  SizedBox(width: 10),
+                                  Text('Archive'),
+                                ],
+                              ),
+                            ),
+                          if(bloc.isSelectionHaveOnlyAZipFile())
+                            PopupMenuItem<String>(
+                              onTap: () => bloc.add(ExtractFileEvent()),
+                              child: const Row(
+                                children: [
+                                  Icon(Icons.unarchive),
+                                  SizedBox(width: 10),
+                                  Text('Extract'),
+                                ],
+                              ),
+                            ),
+                            const PopupMenuItem<String>(
+                              // onTap: () => bloc.add(ArchiveEvent()),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.info),
+                                  SizedBox(width: 10),
+                                  Text('Get Info'),
+                                ],
+                              ),
+                            ),
+                          ];
+                        },
+                      ),
+                    ]
                   ),
                 ],
               ),

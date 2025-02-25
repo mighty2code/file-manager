@@ -20,7 +20,7 @@ class FileManagerApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: PageView(
-        children: [
+        children: const [
           FileManagerScreen(),
           // FileManagerScreen(),
         ],
