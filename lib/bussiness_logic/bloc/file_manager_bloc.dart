@@ -30,6 +30,9 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
     on<ArchiveEvent>(_onArchiveEvent);
     on<ExtractFileEvent>(_onExtractZipEvent);
 
+    on<CreateNewFileEvent>(_onCreateNewFileEvent);
+    on<CreateNewDirectoryEvent>(_onCreateNewDirectoryEvent);
+
     on<RefreshEvent>(_refreshEvent);
     on<GoBackEvent>(_goBack);
   }
@@ -180,7 +183,7 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
       await entity.delete(recursive: true);
     }   
     selectedEntities = {};
-    add(OpenDirectoryEvent(currentDirectory));
+    add(RefreshEvent());
   }
 
   void _pasteEvent(PasteEvent event, Emitter<FileManagerState> emit) async {
@@ -199,21 +202,41 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
       isMoveEvent = false;
     }
     clipBoardEntities = {};
-    add(OpenDirectoryEvent(currentDirectory));
+    add(RefreshEvent());
   }
 
   void _onArchiveEvent(ArchiveEvent event, Emitter<FileManagerState> emit) async {
     if(currentDirectory == null) return;
-    await FileUtils.zipFiles(selectedEntities.toList(), File(p.join(currentDirectory!.path, 'archive.zip')));
+    await FileUtils.zipFiles(selectedEntities.toList(), File(p.join(currentDirectory!.path, event.name)));
     selectedEntities = {};
-    add(OpenDirectoryEvent(currentDirectory));
+    add(RefreshEvent());
   }
 
   void _onExtractZipEvent(ExtractFileEvent event, Emitter<FileManagerState> emit) async {
     if(currentDirectory == null || !isSelectionHaveOnlyAZipFile()) return;
     await FileUtils.unZipFile(selectedEntities.first as File, currentDirectory!.path);
     selectedEntities = {};
-    add(OpenDirectoryEvent(currentDirectory));
+    add(RefreshEvent());
+  }
+
+  void _onCreateNewFileEvent(CreateNewFileEvent event, Emitter<FileManagerState> emit) async {
+    if(currentDirectory == null) return;
+    try {
+      await FileUtils.createFile(name: event.name, destination: currentDirectory!, rethrowException: true);
+      add(RefreshEvent());
+    }  catch (e) {
+      emit(FileManagerError(e));
+    }
+  }
+
+  void _onCreateNewDirectoryEvent(CreateNewDirectoryEvent event, Emitter<FileManagerState> emit) async {
+    if(currentDirectory == null) return;
+    try {
+      await FileUtils.createDirectory(name: event.name, destination: currentDirectory!, rethrowException: true);
+      add(RefreshEvent());
+    }  catch (e) {
+      emit(FileManagerError(e));
+    }
   }
 
   bool isSelectionHaveOnlyAZipFile() {

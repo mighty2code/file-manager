@@ -1,5 +1,6 @@
 import 'package:file_manager/bussiness_logic/bloc/file_manager_bloc.dart';
 import 'package:file_manager/constants/app_colors.dart';
+import 'package:file_manager/utils/dialog_utils.dart';
 import 'package:flutter/material.dart';
 
 class ClipBoardMenu extends StatelessWidget {
@@ -73,7 +74,15 @@ class ClipBoardMenu extends StatelessWidget {
                         itemBuilder: (BuildContext context) {
                           return [
                             PopupMenuItem<String>(
-                              onTap: () => bloc.add(ArchiveEvent()),
+                              onTap: () => DialogUtils.showInputBox(
+                                context,
+                                title: 'Add to Archive',
+                                hintText: 'example.zip',
+                                buttonText: 'Create Zip',
+                                onSubmit: (value) {
+                                  bloc.add(ArchiveEvent(name: value));
+                                }
+                              ),
                               child: const Row(
                                 children: [
                                   Icon(Icons.archive),

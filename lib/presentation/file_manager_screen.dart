@@ -1,10 +1,9 @@
 import 'dart:io';
 import 'package:file_manager/constants/app_colors.dart';
 import 'package:file_manager/presentation/clip_board_menu.dart';
+import 'package:file_manager/utils/dialog_utils.dart';
 import 'package:file_manager/widgets/file_manager_list_tile.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:file_manager/bussiness_logic/bloc/file_manager_bloc.dart';
 
@@ -45,7 +44,7 @@ class FileManagerScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text('File Manager', style: TextStyle(fontSize: 24, color: AppColors.white, fontWeight: FontWeight.w600)),
-                            Icon(Icons.settings, color: AppColors.white)
+                            Icon(Icons.settings, color: AppColors.white),
                           ],
                         ),
                       ],
@@ -57,14 +56,16 @@ class FileManagerScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                      Text('Bookmarks', style: TextStyle(fontSize: 15, color: AppColors.appColor, fontWeight: FontWeight.w600)),
-                      SizedBox(height: 10),
-                      ListTile(title: Text('Downloads')),
-                      ListTile(title: Text('Documents')),
-                      ListTile(title: Text('Pictures')),
-                    ]),
+                        Text('Bookmarks', style: TextStyle(fontSize: 15, color: AppColors.appColor, fontWeight: FontWeight.w600)),
+                        SizedBox(height: 10),
+                        ListTile(title: Text('Downloads')),
+                        ListTile(title: Text('Documents')),
+                        ListTile(title: Text('Pictures')),
+                      ],
+                    ),
                   ),
-                ]),
+                ],
+              ),
             ),
 
             body: BlocBuilder<FileManagerBloc, FileManagerState>(
@@ -73,6 +74,7 @@ class FileManagerScreen extends StatelessWidget {
                 WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
                   ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Error: ${state.error}')));
+                  bloc.add(RefreshEvent());
                 });
               }
 
@@ -105,81 +107,133 @@ class FileManagerScreen extends StatelessWidget {
                     ),
                   ),
                   state is FileManagerLoading
-                      ? const LinearProgressIndicator(color: AppColors.appColor)
-                      : const Divider(),
+                    ? const LinearProgressIndicator(color: AppColors.appColor)
+                    : const Divider(),
                   Expanded(
-                      child: Stack(
-                        alignment: Alignment.center,
+                    child: state is FileManagerLoading
+                      ? const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          state is FileManagerLoading
-                              ? const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  CircularProgressIndicator(color: AppColors.appColor),
-                                ],
-                              )
-                              : state is FileManagerShowList || state is FileManagerPasteState
-                                  ? RefreshIndicator(
-                                    color: AppColors.appColor,
-                                    onRefresh: () => Future.delayed(
-                                      const Duration(seconds: 1), () {
-                                        bloc.add(RefreshEvent());
-                                      }
-                                    ),
-                                    child: ListView.builder(
-                                        padding: const EdgeInsets.only(bottom: 70),
-                                        itemCount: bloc.entities.length,
-                                        itemBuilder: (context, index) {
-                                          FileSystemEntity entity =
-                                              bloc.entities[index];
-                                          return FileManagerListTile(
-                                            entity: entity,
-                                            bloc: bloc,
-                                            onSelect: (entityType) {
-                                              bloc.add(SelectEntityEvent(
-                                                  entity: entity, type: entityType));
-                                            },
-                                            onUnselect: (entityType) {
-                                              bloc.add(UnselectEntityEvent(
-                                                  entity: entity, type: entityType));
-                                            },
-                                            isSelectable: bloc.clipBoardEntities.isEmpty,
-                                            isSelected: bloc.selectedEntities
-                                                .contains(entity) || bloc.clipBoardEntities.contains(entity),
-                                          );
-                                        },
-                                      ),
-                                  )
-                                  : state is FileManagerEmpty
-                                      ? const Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(Icons.folder_copy_outlined),
-                                            SizedBox(width: 10),
-                                            Text('No Content'),
-                                          ],
-                                        )
-                                      : const Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(Icons.error),
-                                            SizedBox(width: 10),
-                                            Text('Someting goes Wrong'),
-                                          ],
-                                        ),
-
-                                  if(bloc.selectedEntities.isNotEmpty || bloc.clipBoardEntities.isNotEmpty)
-                                    Align(
-                                      alignment: Alignment.bottomCenter,
-                                      child: ClipBoardMenu(bloc: bloc)
-                                    )
+                          CircularProgressIndicator(color: AppColors.appColor),
                         ],
-                      )),
+                      )
+                      : state is FileManagerShowList || state is FileManagerPasteState || state is FileManagerError
+                          ? RefreshIndicator(
+                            color: AppColors.appColor,
+                            onRefresh: () => Future.delayed(
+                              const Duration(seconds: 1), () {
+                                bloc.add(RefreshEvent());
+                              }
+                            ),
+                            child: ListView.builder(
+                              padding: const EdgeInsets.only(bottom: 70),
+                              itemCount: bloc.entities.length,
+                              cacheExtent: 1000,
+                              itemBuilder: (context, index) {
+                                FileSystemEntity entity =
+                                    bloc.entities[index];
+                                return FileManagerListTile(
+                                  entity: entity,
+                                  bloc: bloc,
+                                  onSelect: (entityType) {
+                                    bloc.add(SelectEntityEvent(
+                                        entity: entity, type: entityType));
+                                  },
+                                  onUnselect: (entityType) {
+                                    bloc.add(UnselectEntityEvent(
+                                        entity: entity, type: entityType));
+                                  },
+                                  isSelectable: bloc.clipBoardEntities.isEmpty,
+                                  isSelected: bloc.selectedEntities
+                                      .contains(entity) || bloc.clipBoardEntities.contains(entity),
+                                );
+                              },
+                            ),
+                          )
+                          : state is FileManagerEmpty
+                              ? const Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.folder_copy_outlined),
+                                    SizedBox(width: 10),
+                                    Text('No Content'),
+                                  ],
+                                )
+                              : const Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.error),
+                                    SizedBox(width: 10),
+                                    Text('Someting goes Wrong'),
+                                  ],
+                                ),
+                    ),
                 ],
               );
-            })),
+            }),
+            bottomNavigationBar: BlocBuilder<FileManagerBloc, FileManagerState>(
+                builder: (context, state) {
+                return bloc.selectedEntities.isNotEmpty || bloc.clipBoardEntities.isNotEmpty ? ClipBoardMenu(bloc: bloc) : const SizedBox.shrink();
+              }
+            ),  
+            floatingActionButton: FloatingActionButton(
+              onPressed: () {},
+              backgroundColor: AppColors.appColor.shade100,
+              child: PopupMenuButton<String>(
+                offset: const Offset(10, -140),
+                popUpAnimationStyle: AnimationStyle(
+                  curve: Curves.easeOut,                   // Forward animation curve
+                  duration: const Duration(milliseconds: 300),  // Forward animation duration
+                  reverseCurve: Curves.easeIn,           // Reverse animation curve when closing
+                  reverseDuration: const Duration(milliseconds: 200), // Reverse animation duration
+                ),
+                color: AppColors.white,
+                child: const Icon(Icons.add,  size: 30, color: AppColors.appColor),
+                itemBuilder: (BuildContext context) {
+                  return [
+                    PopupMenuItem<String>(
+                      onTap: () => DialogUtils.showInputBox(
+                        context,
+                        title: 'Create a folder',
+                        hintText: 'Enter folder name',
+                        buttonText: 'Create',
+                        onSubmit: (value) {
+                          bloc.add(CreateNewDirectoryEvent(name: value));
+                        }
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.folder),
+                          SizedBox(width: 10),
+                          Text('New Folder'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      onTap: () => DialogUtils.showInputBox(
+                        context,
+                        title: 'Create a file',
+                        hintText: 'Enter file name',
+                        buttonText: 'Create',
+                        onSubmit: (value) {
+                          bloc.add(CreateNewFileEvent(name: value));
+                        }
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.insert_drive_file),
+                          SizedBox(width: 10),
+                          Text('New File'),
+                        ],
+                      ),
+                    ),
+                  ];
+                },
+              ),
+            ),
+        ),
       ),
     );
   }

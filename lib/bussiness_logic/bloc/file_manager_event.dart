@@ -36,8 +36,22 @@ final class MoveEvent extends FileManagerEvent {}
 final class DeleteEvent extends FileManagerEvent {}
 final class PasteEvent extends FileManagerEvent {}
 
-final class ArchiveEvent extends FileManagerEvent {}
+final class ArchiveEvent extends FileManagerEvent {
+  final String name;
+  ArchiveEvent({required this.name});
+}
+
 final class ExtractFileEvent extends FileManagerEvent {}
+
+final class CreateNewFileEvent extends FileManagerEvent {
+  final String name;
+  CreateNewFileEvent({required this.name});
+}
+
+final class CreateNewDirectoryEvent extends FileManagerEvent {
+  final String name;
+  CreateNewDirectoryEvent({required this.name});
+}
 
 final class RefreshEvent extends FileManagerEvent {}
 
