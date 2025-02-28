@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:file_manager/constants/constants.dart';
 import 'package:file_manager/utils/file_utils.dart';
+import 'package:file_manager/utils/ios_media_access.dart';
 import 'package:file_manager/utils/permission_manager.dart';
 import 'package:flutter/foundation.dart';
 import 'package:open_file/open_file.dart';
@@ -89,9 +90,19 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
     return directories;
   }
 
-  void _openDirectory(
-      OpenDirectoryEvent event, Emitter<FileManagerState> emit) {
+  void _openDirectory(OpenDirectoryEvent event, Emitter<FileManagerState> emit) async {
     Directory? dir = event.directory;
+    // if(dir!.path.contains('ios') && Platform.isIOS) {
+      // entities = await IosMediaAccess.getAlbumDirectories();
+    //     isLoading = false;
+    //     if (entities.isEmpty) {
+    //       emit(FileManagerEmpty());
+    //     } else {
+    //       emit(FileManagerShowList());
+    //     }
+    //     return;
+    // }
+
     if (dir == null) return;
 
     emit(FileManagerLoading());
