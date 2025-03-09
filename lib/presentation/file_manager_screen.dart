@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:file_manager/constants/app_colors.dart';
-import 'package:file_manager/presentation/clip_board_menu.dart';
-import 'package:file_manager/utils/dialog_utils.dart';
-import 'package:file_manager/utils/file_utils.dart';
+import 'package:file_manager/presentation/menus/clip_board_menu.dart';
+import 'package:file_manager/presentation/drawer/quick_drawer.dart';
+import 'package:file_manager/presentation/menus/floating_menu.dart';
 import 'package:file_manager/widgets/file_manager_list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -31,43 +31,7 @@ class FileManagerScreen extends StatelessWidget {
             ),
             backgroundColor: AppColors.white,
 
-            drawer: Drawer(
-              child: Column(
-                children: [
-                  Container(
-                    height: 167,
-                    color: AppColors.appColor.shade700,
-                    padding: const EdgeInsets.only(bottom: 10, left: 15, right: 15),
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('File Manager', style: TextStyle(fontSize: 24, color: AppColors.white, fontWeight: FontWeight.w600)),
-                            Icon(Icons.settings, color: AppColors.white),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const Padding(
-                    padding: EdgeInsets.only(top: 20, left: 15),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Bookmarks', style: TextStyle(fontSize: 15, color: AppColors.appColor, fontWeight: FontWeight.w600)),
-                        SizedBox(height: 10),
-                        ListTile(title: Text('Downloads')),
-                        ListTile(title: Text('Documents')),
-                        ListTile(title: Text('Pictures')),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            drawer: QuickDrawer(bloc: bloc),
 
             body: BlocBuilder<FileManagerBloc, FileManagerState>(
                 builder: (context, state) {
@@ -186,110 +150,6 @@ class FileManagerScreen extends StatelessWidget {
             ),
         ),
       ),
-    );
-  }
-}
-
-class FloatingMenu extends StatefulWidget {
-  const FloatingMenu({
-    super.key,
-    required this.bloc,
-  });
-
-  final FileManagerBloc bloc;
-
-  @override
-  State<FloatingMenu> createState() => _FloatingMenuState();
-}
-
-class _FloatingMenuState extends State<FloatingMenu> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  bool isPlaying = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 400),
-      lowerBound: 0,
-      upperBound: 0.625
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return PopupMenuButton<String>(
-      offset: const Offset(10, -140),
-      popUpAnimationStyle: AnimationStyle(
-        curve: Curves.easeOut,                   // Forward animation curve
-        duration: const Duration(milliseconds: 400),  // Forward animation duration
-        reverseCurve: Curves.easeIn,           // Reverse animation curve when closing
-        reverseDuration: const Duration(milliseconds: 400), // Reverse animation duration
-      ),
-      color: AppColors.appColor.shade50,
-      child: RotationTransition(
-        turns: _controller,
-        child: const Icon(
-          Icons.add,
-          size: 30,
-          color: AppColors.appColor
-        ),
-      ),
-      onOpened: () {
-        _controller.forward();
-  // FileUtils.trimAudio(path: '/storage/emulated/0/New/audioTrimmed.m4a.m4a', outputPath: '/storage/emulated/0/New/output.m4a', startTime: 1, endTime: 3);
-
-      },
-      onCanceled: () {
-        _controller.reverse();
-      },
-      itemBuilder: (BuildContext context) {
-        return [
-          PopupMenuItem<String>(
-            onTap: () => DialogUtils.showInputBox(
-              context,
-              title: 'Create a folder',
-              hintText: 'Enter folder name',
-              buttonText: 'Create',
-              onSubmit: (value) {
-                widget.bloc.add(CreateNewDirectoryEvent(name: value));
-              }
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.folder, color: AppColors.appColor.shade900),
-                const SizedBox(width: 10),
-                const Text('New Folder'),
-              ],
-            ),
-          ),
-          PopupMenuItem<String>(
-            onTap: () => DialogUtils.showInputBox(
-              context,
-              title: 'Create a file',
-              hintText: 'Enter file name',
-              buttonText: 'Create',
-              onSubmit: (value) {
-                widget.bloc.add(CreateNewFileEvent(name: value));
-              }
-            ),
-            child:  Row(
-              children: [
-                Icon(Icons.insert_drive_file, color: AppColors.appColor.shade900),
-                const SizedBox(width: 10),
-                const Text('New File'),
-              ],
-            ),
-          ),
-        ];
-      },
     );
   }
 }

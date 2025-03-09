@@ -5,3 +5,7 @@ enum EntityType {
 enum ErrorSeverity {
   critical, major, minor, moderate
 }
+
+enum StorageType {
+  internal, sdcard
+}

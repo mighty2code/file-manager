@@ -47,9 +47,9 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
   bool isLoading = false;
   bool isMoveEvent = false;
 
-  init() {
+  init({StorageType storageType = StorageType.internal}) {
     emit(FileManagerLoading());
-    _requestPermissions().then((value) => _loadFiles());
+    _requestPermissions().then((value) => _loadFiles(storageType: storageType));
   }
 
   Future<bool> _requestPermissions() async {
@@ -57,7 +57,7 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
         openAppSettingsIfDenied: false);
   }
 
-  Future<void> _loadFiles() async {
+  Future<void> _loadFiles({StorageType storageType = StorageType.internal}) async {
     List<Directory>? externalDirs;
     if(Platform.isAndroid) {
       externalDirs = await getExternalStorageDirectories();
@@ -68,7 +68,12 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
     if (externalDirs != null && externalDirs.isNotEmpty) {
       if(Platform.isAndroid) {
         // Get root storage path
-        String rootPath = externalDirs.first.path.split("Android").first;
+        String rootPath = '/storage/emualated/0/';
+        if(storageType == StorageType.internal) {
+          rootPath = externalDirs.first.path.split("Android").first;
+        } else if(storageType == StorageType.sdcard && externalDirs.length > 1) {
+          rootPath = externalDirs[1].path.split("Android").first;
+        }
         currentDirectory = Directory(rootPath);
       } else {
         currentDirectory = externalDirs.first;
