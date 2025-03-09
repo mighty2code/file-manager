@@ -2,10 +2,12 @@ import 'dart:async';
 import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:file_manager/constants/constants.dart';
+import 'package:file_manager/constants/native_config.dart';
 import 'package:file_manager/utils/file_utils.dart';
 import 'package:file_manager/utils/ios_media_access.dart';
 import 'package:file_manager/utils/permission_manager.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -73,6 +75,8 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
           rootPath = externalDirs.first.path.split("Android").first;
         } else if(storageType == StorageType.sdcard && externalDirs.length > 1) {
           rootPath = externalDirs[1].path.split("Android").first;
+          await grantSDCardPermission(rootPath);
+          listenForSDCardPermission();
         }
         currentDirectory = Directory(rootPath);
       } else {
@@ -283,5 +287,32 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
         add(OpenDirectoryEvent(parentDir));
       }
     }
+  }
+
+  Future<bool> grantSDCardPermission(String path) async {
+    const channel = MethodChannel(NativeChannels.android);
+     try {
+      final bool result = await channel.invokeMethod(
+        AndroidMethods.getSDCardPermission,
+        {'path': path},
+      );
+      debugPrint('${AndroidMethods.getSDCardPermission}: $result');
+      return result;
+    } on PlatformException catch (e) {
+      debugPrint("Failed to get SD Card permission: ${e.message} [${AndroidMethods.getSDCardPermission}]");
+      return false;
+    }
+  }
+
+  // Listen for SD card permission result
+  static Future<void> listenForSDCardPermission() async {
+    const channel = MethodChannel(NativeChannels.android);
+    channel.setMethodCallHandler((call) async {
+      if (call.method == AndroidMethods.onSDCardPermissionResolved) {
+        String uri = call.arguments;
+        print("Received SD Card URI: $uri [${AndroidMethods.onSDCardPermissionResolved}]");
+        // Handle the URI here (e.g., access SD card files)
+      }
+    });
   }
 }
