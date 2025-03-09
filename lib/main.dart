@@ -12,7 +12,7 @@ void main0() {
   // await SystemChrome.setPreferredOrientations([
   //   DeviceOrientation.portraitUp,
   // ]);
-  Bloc.observer = PrettyBlocObserver();
+  Bloc.observer = PrettyBlocObserver();  
   runApp(const FileManagerApp());
 }
 

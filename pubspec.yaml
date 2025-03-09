@@ -12,6 +12,7 @@ dependencies:
   device_info_plus: ^10.1.2
   flutter:
     sdk: flutter
+  flutter_audio_trimmer: ^0.0.5
   flutter_bloc: ^8.1.6
   intl: ^0.20.2
   open_file: ^3.5.4

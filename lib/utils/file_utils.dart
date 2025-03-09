@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:archive/archive.dart';
 import 'package:archive/archive_io.dart';
+import 'package:flutter_audio_trimmer/flutter_audio_trimmer.dart';
 
 class FileUtils {
   /// Check if file is an APK file (Android application package)
@@ -152,4 +153,25 @@ class FileUtils {
       debugPrint('Error occurred while unzipping file [${zipFile.path}]: $e');
     }
   }
+
+  static Future<int> trimAudio({required String path, required String outputPath, required int startTime, required int endTime}) async {
+  try {
+    File? trimmedAudioFile = await FlutterAudioTrimmer.trim(
+      inputFile: File(path),
+      outputDirectory: Directory(p.dirname(outputPath)),
+      fileName: p.basename(outputPath),
+      fileType:
+      //  Platform.isAndroid ? AudioFileType.mp3 :
+       AudioFileType.m4a,
+      time: AudioTrimTime(
+        start: Duration(seconds: startTime),
+        end: Duration(seconds: endTime),
+      ),
+    );
+    return 0;
+  } catch (e) {
+    debugPrint('Error came while triming audio: $e');
+    return 1;
+  }
+}
 }
