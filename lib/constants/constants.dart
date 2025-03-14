@@ -7,5 +7,7 @@ enum ErrorSeverity {
 }
 
 enum StorageType {
-  internal, sdcard
+  internal, sdcard,
+  download, documents,
+  pictures, music
 }

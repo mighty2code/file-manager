@@ -5,6 +5,7 @@ import 'package:file_manager/widgets/ui_error_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:pretty_bloc_observer/pretty_bloc_observer.dart';
 import 'constants/constants.dart';
+import 'data/local/shared_prefs.dart';
 import 'utils/exceptions.dart';
 
 void main0() {
@@ -21,6 +22,7 @@ void main() async {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
     Bloc.observer = PrettyBlocObserver();
+    SharedPrefs.init();
 
     // Catch framework-level Flutter errors
     FlutterError.onError = (FlutterErrorDetails details) {

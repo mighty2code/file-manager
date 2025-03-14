@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:file_manager/constants/constants.dart';
 import 'package:file_manager/constants/native_config.dart';
+import 'package:file_manager/data/local/shared_prefs.dart';
 import 'package:file_manager/utils/file_utils.dart';
 import 'package:file_manager/utils/ios_media_access.dart';
 import 'package:file_manager/utils/permission_manager.dart';
@@ -44,6 +45,7 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
   Set<FileSystemEntity> selectedEntities = {};
   Set<FileSystemEntity> clipBoardEntities = {};
 
+  Directory? rootDirectory;
   Directory? currentDirectory;
   Directory? previousDirectory;
   bool isLoading = false;
@@ -70,17 +72,26 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
     if (externalDirs != null && externalDirs.isNotEmpty) {
       if(Platform.isAndroid) {
         // Get root storage path
-        String rootPath = '/storage/emualated/0/';
-        if(storageType == StorageType.internal) {
-          rootPath = externalDirs.first.path.split("Android").first;
-        } else if(storageType == StorageType.sdcard && externalDirs.length > 1) {
-          rootPath = externalDirs[1].path.split("Android").first;
+        String rootPath = externalDirs.first.path.split("Android").first;
+        String? externalPath = externalDirs.length > 1 ? externalDirs[1].path.split("Android").first : null;
+        
+        /// Saving root paths
+        SharedPrefs.setString(StorageType.internal.name, rootPath);
+        if(externalPath != null) {
+          SharedPrefs.setString(StorageType.sdcard.name, externalPath);
+        }
+
+        if(storageType == StorageType.sdcard && externalPath != null) {
+          rootPath = externalPath;
           await grantSDCardPermission(rootPath);
           listenForSDCardPermission();
         }
         currentDirectory = Directory(rootPath);
+        rootDirectory = Directory(rootPath);
       } else {
         currentDirectory = externalDirs.first;
+        rootDirectory = externalDirs.first;
+
       }
       add(OpenDirectoryEvent(currentDirectory));
     }
@@ -120,6 +131,21 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
       if (dir.existsSync()) {
         currentDirectory = dir;
         entities = dir.listSync();
+        if(dir.path == rootDirectory?.path) {
+          for (var dir in entities) {
+            // Extract the last segment of the directory path
+            String dirBaseName = p.basename(dir.path).toLowerCase();
+            if(dirBaseName.contains(StorageType.download.name)) {
+              SharedPrefs.setString(StorageType.download.name, dir.path);
+            } else if(dirBaseName.contains(StorageType.documents.name)) {
+              SharedPrefs.setString(StorageType.documents.name, dir.path);
+            } else if(dirBaseName.contains(StorageType.pictures.name)) {
+              SharedPrefs.setString(StorageType.pictures.name, dir.path);
+            } else if(dirBaseName.contains(StorageType.music.name)) {
+              SharedPrefs.setString(StorageType.music.name, dir.path);
+            } 
+          }
+        }
         isLoading = false;
         if (entities.isEmpty) {
           emit(FileManagerEmpty());

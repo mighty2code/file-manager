@@ -155,23 +155,39 @@ class FileUtils {
   }
 
   static Future<int> trimAudio({required String path, required String outputPath, required int startTime, required int endTime}) async {
-  try {
-    File? trimmedAudioFile = await FlutterAudioTrimmer.trim(
-      inputFile: File(path),
-      outputDirectory: Directory(p.dirname(outputPath)),
-      fileName: p.basename(outputPath),
-      fileType:
-      //  Platform.isAndroid ? AudioFileType.mp3 :
-       AudioFileType.m4a,
-      time: AudioTrimTime(
-        start: Duration(seconds: startTime),
-        end: Duration(seconds: endTime),
-      ),
-    );
-    return 0;
-  } catch (e) {
-    debugPrint('Error came while triming audio: $e');
-    return 1;
+    try {
+      File? trimmedAudioFile = await FlutterAudioTrimmer.trim(
+        inputFile: File(path),
+        outputDirectory: Directory(p.dirname(outputPath)),
+        fileName: p.basename(outputPath),
+        fileType:
+        //  Platform.isAndroid ? AudioFileType.mp3 :
+        AudioFileType.m4a,
+        time: AudioTrimTime(
+          start: Duration(seconds: startTime),
+          end: Duration(seconds: endTime),
+        ),
+      );
+      return 0;
+    } catch (e) {
+      debugPrint('Error came while triming audio: $e');
+      return 1;
+    }
   }
-}
+
+  /// Recursively calculates the total size (in bytes) of a directory.
+  Future<int> getDirectorySize(Directory directory) async {
+    int totalSize = 0;
+    try {
+      await for (FileSystemEntity entity
+          in directory.list(recursive: true, followLinks: false)) {
+        if (entity is File) {
+          totalSize += await entity.length();
+        }
+      }
+    } catch (e) {
+      debugPrint("Error reading directory: $e");
+    }
+    return totalSize;
+  }
 }
