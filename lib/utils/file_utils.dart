@@ -1,10 +1,14 @@
 import 'dart:io';
 import 'dart:isolate';
+import 'package:file_manager/constants/constants.dart';
+import 'package:file_manager/data/local/shared_prefs.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:archive/archive.dart';
 import 'package:archive/archive_io.dart';
 import 'package:flutter_audio_trimmer/flutter_audio_trimmer.dart';
+
+import 'sdcard_file_utils.dart';
 
 class FileUtils {
   /// Check if file is an APK file (Android application package)
@@ -13,8 +17,15 @@ class FileUtils {
   /// Check if file is a Zip file (Zip Archive)
   static bool isZipFile(File file) => p.extension(file.path).toLowerCase() == '.zip';
 
+  static bool isInternal(Directory directory) =>directory.path.contains(SharedPrefs.getString(StorageType.internal.name) ?? 'XXXX');
+
   static Future<void> createFile({required String name, required Directory destination, bool rethrowException = false}) async {
     try {
+      if(!isInternal(destination)) {
+        await SDCardFileUtils.createFile(name: name, destination: destination.path);
+        return;
+      }
+
       File file = File(p.join(destination.path, name));
       if(await file.exists()) {
         throw Exception("File ${file.path} already exist.");
@@ -29,6 +40,10 @@ class FileUtils {
   
   static Future<void> createDirectory({required String name, required Directory destination, bool rethrowException = false}) async {
     try {
+      if(!isInternal(destination)) {
+        await SDCardFileUtils.createDirectory(name: name, destination: destination.path);
+        return;
+      }
       Directory directory = Directory(p.join(destination.path, name));
       if(await directory.exists()) {
         throw Exception("Directory ${directory.path} already exist.");
@@ -43,6 +58,10 @@ class FileUtils {
 
   static Future<void> cloneDirectory({required Directory source, required Directory destination}) async {
     try {
+      if(!isInternal(destination)) {
+        await SDCardFileUtils.cloneDirectory(source: source.path, destination: destination.path);
+        return;
+      }
       Isolate.run(() async {
         if (await source.exists()) {
           // Get the list of all the files in the source directory recursively
@@ -64,6 +83,10 @@ class FileUtils {
 
   static Future<void> cloneFile({required File source, required File destination}) async {
     try {
+      if(!isInternal(destination.parent)) {
+        await SDCardFileUtils.cloneFile(source: source.path, destination: destination.path);
+        return;
+      }
       if (await source.exists()) {
         // Copy the content of the file to the destination
         if (!(await destination.parent.exists())) {

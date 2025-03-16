@@ -11,3 +11,7 @@ enum StorageType {
   download, documents,
   pictures, music
 }
+
+class SharedPrefKeys {
+  static const sdcardUri = 'sdcard-uri'; 
+}

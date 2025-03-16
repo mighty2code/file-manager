@@ -51,8 +51,11 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
   bool isLoading = false;
   bool isMoveEvent = false;
 
+  static const androidChannel = MethodChannel(NativeChannels.android);
+
   init({StorageType storageType = StorageType.internal}) {
     emit(FileManagerLoading());
+    listenForSDCardPermission();
     _requestPermissions().then((value) => _loadFiles(storageType: storageType));
   }
 
@@ -84,7 +87,6 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
         if(storageType == StorageType.sdcard && externalPath != null) {
           rootPath = externalPath;
           await grantSDCardPermission(rootPath);
-          listenForSDCardPermission();
         }
         currentDirectory = Directory(rootPath);
         rootDirectory = Directory(rootPath);
@@ -316,9 +318,8 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
   }
 
   Future<bool> grantSDCardPermission(String path) async {
-    const channel = MethodChannel(NativeChannels.android);
      try {
-      final bool result = await channel.invokeMethod(
+      final bool result = await androidChannel.invokeMethod(
         AndroidMethods.getSDCardPermission,
         {'path': path},
       );
@@ -332,12 +333,12 @@ class FileManagerBloc extends Bloc<FileManagerEvent, FileManagerState> {
 
   // Listen for SD card permission result
   static Future<void> listenForSDCardPermission() async {
-    const channel = MethodChannel(NativeChannels.android);
-    channel.setMethodCallHandler((call) async {
+    androidChannel.setMethodCallHandler((call) async {
       if (call.method == AndroidMethods.onSDCardPermissionResolved) {
         String uri = call.arguments;
         print("Received SD Card URI: $uri [${AndroidMethods.onSDCardPermissionResolved}]");
         // Handle the URI here (e.g., access SD card files)
+        SharedPrefs.setString(SharedPrefKeys.sdcardUri, uri);
       }
     });
   }

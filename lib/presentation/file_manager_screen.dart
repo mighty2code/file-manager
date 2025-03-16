@@ -61,9 +61,18 @@ class FileManagerScreen extends StatelessWidget {
                         Expanded(
                           child: SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
-                            child: Text(
-                              bloc.currentDirectory?.path ?? '',
-                              style: const TextStyle(fontSize: 20),
+                            child: Theme(
+                              data: ThemeData(
+                                textSelectionTheme: TextSelectionThemeData(
+                                  cursorColor: AppColors.appColor,
+                                  selectionColor: AppColors.appColor.shade100,
+                                  selectionHandleColor: AppColors.appColor,
+                                )
+                              ),
+                              child: SelectableText(
+                                bloc.currentDirectory?.path ?? '',
+                                style: const TextStyle(fontSize: 20),
+                              ),
                             ),
                           ),
                         ),

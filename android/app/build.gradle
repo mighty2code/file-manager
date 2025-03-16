@@ -24,8 +24,8 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.example.file_manager"
-    compileSdk 34 //flutter.compileSdkVersion
-    ndkVersion flutter.ndkVersion
+    compileSdk 35 //flutter.compileSdkVersion
+    ndkVersion  "27.0.12077973"//flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -64,4 +64,7 @@ flutter {
     source '../..'
 }
 
-dependencies {}
+dependencies {
+    implementation 'androidx.documentfile:documentfile:1.0.1'
+    implementation "androidx.activity:activity-ktx:1.10.1"
+}

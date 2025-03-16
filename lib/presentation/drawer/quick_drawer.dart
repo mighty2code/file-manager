@@ -59,6 +59,9 @@ class QuickDrawer extends StatelessWidget {
                 if(SharedPrefs.getString(StorageType.sdcard.name) != null)
                   BookmarkTile(title: 'SD Card', leadingIcon: Icons.sd_card_rounded, 
                     onTap: () async {
+                      if((SharedPrefs.getString(SharedPrefKeys.sdcardUri) ?? '').isEmpty) {
+                        await bloc.grantSDCardPermission(SharedPrefs.getString(StorageType.sdcard.name)!);
+                      }
                       bloc.add(OpenDirectoryEvent(Directory(SharedPrefs.getString(StorageType.sdcard.name)!)));
                       Navigator.pop(context);
                     },
