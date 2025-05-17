@@ -6,6 +6,7 @@ import 'package:file_manager/utils/file_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'image_thumbnail.dart';
+import 'video_thumbview.dart';
 
 class FileManagerListTile extends StatefulWidget {
   const FileManagerListTile({
@@ -83,8 +84,12 @@ class _FileManagerListTileState extends State<FileManagerListTile> {
         child: ListTile(
           selectedColor: AppColors.appColor.shade50,
           leading: widget.entity is Directory
-              ? const Icon(Icons.folder)
-              : FileUtils.isImageFile(widget.entity as File) ? ImageThumbnail(file: widget.entity as File, size: const Size(35,35)) : const Icon(Icons.insert_drive_file),
+              ? Icon(Icons.folder, size: 35, color: AppColors.appColor.shade800)
+              : FileUtils.isImageFile(widget.entity as File)
+                  ? ImageThumbnail(image: widget.entity as File, size: const Size(35,35))
+                  : FileUtils.isVideoFile(widget.entity as File)
+                    ? VideoThumbView(video: widget.entity as File, size: const Size(35,35))
+                    : const Icon(Icons.insert_drive_file,  size: 35),
           title: Text(widget.entity.path.split('/').last),
           subtitle: stats != null ? Text('${DateFormat('yyyy/MM/dd hh:mm a').format(stats!.modified)}' /*, ${stats!.size.getSize()}' */, style: const TextStyle(fontSize: 11, color: AppColors.grey)) : null,
         ),
