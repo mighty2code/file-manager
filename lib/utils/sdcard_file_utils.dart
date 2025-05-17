@@ -3,6 +3,7 @@ import 'package:file_manager/constants/native_config.dart';
 import 'package:file_manager/data/local/shared_prefs.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:path/path.dart' as p;
 
 class SDCardFileUtils {
   static const _channel = MethodChannel(NativeChannels.android);

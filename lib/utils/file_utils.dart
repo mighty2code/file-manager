@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:archive/archive.dart';
 import 'package:archive/archive_io.dart';
-import 'package:flutter_audio_trimmer/flutter_audio_trimmer.dart';
+// import 'package:flutter_audio_trimmer/flutter_audio_trimmer.dart';
 
 import 'sdcard_file_utils.dart';
 
@@ -84,7 +84,7 @@ class FileUtils {
   static Future<void> cloneFile({required File source, required File destination}) async {
     try {
       if(!isInternal(destination.parent)) {
-        await SDCardFileUtils.cloneFile(source: source.path, destination: destination.path);
+        await SDCardFileUtils.cloneFile(source: source.path, destination: destination.parent.path);
         return;
       }
       if (await source.exists()) {
@@ -177,26 +177,26 @@ class FileUtils {
     }
   }
 
-  static Future<int> trimAudio({required String path, required String outputPath, required int startTime, required int endTime}) async {
-    try {
-      File? trimmedAudioFile = await FlutterAudioTrimmer.trim(
-        inputFile: File(path),
-        outputDirectory: Directory(p.dirname(outputPath)),
-        fileName: p.basename(outputPath),
-        fileType:
-        //  Platform.isAndroid ? AudioFileType.mp3 :
-        AudioFileType.m4a,
-        time: AudioTrimTime(
-          start: Duration(seconds: startTime),
-          end: Duration(seconds: endTime),
-        ),
-      );
-      return 0;
-    } catch (e) {
-      debugPrint('Error came while triming audio: $e');
-      return 1;
-    }
-  }
+  // static Future<int> trimAudio({required String path, required String outputPath, required int startTime, required int endTime}) async {
+  //   try {
+  //     File? trimmedAudioFile = await FlutterAudioTrimmer.trim(
+  //       inputFile: File(path),
+  //       outputDirectory: Directory(p.dirname(outputPath)),
+  //       fileName: p.basename(outputPath),
+  //       fileType:
+  //       //  Platform.isAndroid ? AudioFileType.mp3 :
+  //       AudioFileType.m4a,
+  //       time: AudioTrimTime(
+  //         start: Duration(seconds: startTime),
+  //         end: Duration(seconds: endTime),
+  //       ),
+  //     );
+  //     return 0;
+  //   } catch (e) {
+  //     debugPrint('Error came while triming audio: $e');
+  //     return 1;
+  //   }
+  // }
 
   /// Recursively calculates the total size (in bytes) of a directory.
   Future<int> getDirectorySize(Directory directory) async {
