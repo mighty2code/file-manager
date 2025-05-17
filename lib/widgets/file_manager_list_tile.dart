@@ -2,8 +2,10 @@ import 'dart:io';
 import 'package:file_manager/bussiness_logic/bloc/file_manager_bloc.dart';
 import 'package:file_manager/constants/app_colors.dart';
 import 'package:file_manager/constants/constants.dart';
+import 'package:file_manager/utils/file_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'image_thumbnail.dart';
 
 class FileManagerListTile extends StatefulWidget {
   const FileManagerListTile({
@@ -80,9 +82,9 @@ class _FileManagerListTileState extends State<FileManagerListTile> {
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
         child: ListTile(
           selectedColor: AppColors.appColor.shade50,
-          leading: Icon(widget.entity is Directory
-              ? Icons.folder
-              : Icons.insert_drive_file),
+          leading: widget.entity is Directory
+              ? const Icon(Icons.folder)
+              : FileUtils.isImageFile(widget.entity as File) ? ImageThumbnail(file: widget.entity as File, size: const Size(35,35)) : const Icon(Icons.insert_drive_file),
           title: Text(widget.entity.path.split('/').last),
           subtitle: stats != null ? Text('${DateFormat('yyyy/MM/dd hh:mm a').format(stats!.modified)}' /*, ${stats!.size.getSize()}' */, style: const TextStyle(fontSize: 11, color: AppColors.grey)) : null,
         ),

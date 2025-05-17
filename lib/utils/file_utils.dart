@@ -11,6 +11,23 @@ import 'package:archive/archive_io.dart';
 import 'sdcard_file_utils.dart';
 
 class FileUtils {
+  /// Check if file is an image file (e.g., JPG, PNG, GIF, etc.)
+  static bool isImageFile(File file) {
+    final ext = p.extension(file.path).toLowerCase();
+    return ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.heic'].contains(ext);
+  }
+
+  /// Check if file is a video file (e.g., MP4, MOV, MKV, etc.)
+  static bool isVideoFile(File file) {
+    final ext = p.extension(file.path).toLowerCase();
+    return ['.mp4', '.mov', '.wmv', '.avi', '.flv', '.mkv', '.webm'].contains(ext);
+  }
+
+  /// Check if file is an audio file (e.g., MP3, WAV, AAC, etc.)
+  static bool isAudioFile(File file) {
+    final ext = p.extension(file.path).toLowerCase();
+    return ['.mp3', '.wav', '.aac', '.ogg', '.m4a', '.flac'].contains(ext);
+  }
   /// Check if file is an APK file (Android application package)
   static bool isApkFile(File file) => p.extension(file.path).toLowerCase() == '.apk';
 
